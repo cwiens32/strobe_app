@@ -621,7 +621,7 @@ class FormWidget(QWidget):
             elif self.search_one.isChecked():
                 crop = "one"
             elif self.search_all.isChecked():
-                crop = "yes"
+                crop = "all"
 
             if self.auto_thresh.value() == 0:
                 autoid_thresh = None
@@ -637,7 +637,7 @@ class FormWidget(QWidget):
             self.strobe_label.setText(
                 'Selected strobe frames: ' + ", ".join([str(element) for element in self.frames.to_list()]))
             self.strobe_label.setWordWrap(True)
-            self.strobebutton.setText('Reselect strobe frames')
+            self.strobebutton.setText('Clear and reselect strobe frames')
         except AttributeError:
             self.show()
             self.error_window("<b>Cannot identify strobe frames!</b><br><br>"
