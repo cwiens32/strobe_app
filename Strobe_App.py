@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget)
 import sys
+import os
 from Strobe.strobe import strobe, strobe_image, strobe_findframes, strobe_autofindframes
 
 
@@ -343,13 +344,14 @@ class PopUpProgressB(QWidget):
 class strobeImageWorker(QObject):
     finished = pyqtSignal()
 
-    def __init__(self, image, createImagebutton, image_label, fname, frames, searcharea, samp, thresh, bgint,
-                 frame_thresh, frame_num):
+    def __init__(self, image, createImagebutton, image_label, fname_og, fname_new, frames, searcharea, samp, thresh,
+                 bgint, frame_thresh, frame_num):
         super().__init__()
         self.image = image
         self.createImagebutton = createImagebutton
         self.image_label = image_label
-        self.fname = fname
+        self.fname_og = fname_og
+        self.fname_new = fname_new
         self.frames = frames
         self.searcharea = searcharea
         self.samp = samp
@@ -364,10 +366,10 @@ class strobeImageWorker(QObject):
         bar = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
         self.frames = bar
         # run strobe image function
-        strobe_image(self.fname, self.fname[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
+        strobe_image(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                      samp=self.samp, thresh=self.thresh, bgint=self.bgint)
 
-        pixmap = QPixmap(self.fname[:-4] + "_strobe.jpg").scaledToWidth(820)
+        pixmap = QPixmap(self.fname_new[:-4] + "_strobe.jpg").scaledToWidth(820)
         self.image.setPixmap(pixmap)
 
         self.createImagebutton.setText("Recreate strobe image")
@@ -380,11 +382,12 @@ class strobeImageWorker(QObject):
 class strobeVideoWorker(QObject):
     finished = pyqtSignal()
 
-    def __init__(self, image, image_label, fname, frames, searcharea, samp, thresh, bgint):
+    def __init__(self, image, image_label, fname_og, fname_new, frames, searcharea, samp, thresh, bgint):
         super().__init__()
         self.image = image
         self.image_label = image_label
-        self.fname = fname
+        self.fname_og = fname_og
+        self.fname_new = fname_new
         self.frames = frames
         self.searcharea = searcharea
         self.samp = samp
@@ -393,10 +396,10 @@ class strobeVideoWorker(QObject):
 
     def run(self):
         # run strobe image function
-        strobe(self.fname, self.fname[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
+        strobe(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                samp=self.samp, thresh=self.thresh, bgint=self.bgint)
 
-        pixmap = QPixmap(self.fname[:-4] + "_strobe.jpg").scaledToWidth(820)
+        pixmap = QPixmap(self.fname_new[:-4] + "_strobe.jpg").scaledToWidth(820)
         self.image.setPixmap(pixmap)
 
         self.image_label.setText("Your strobe video and image have been created! They are saved where the original video is located.")
@@ -524,15 +527,28 @@ class FormWidget(QWidget):
         filebrowse.clicked.connect(self.displayFilename)
         self.filename_label = QLabel("No video selected", self)
 
+        folderselect = QPushButton("Select a directory to save to")
+        folderselect.clicked.connect(self.displayFoldername)
+        self.foldersave_label = QLabel("", self)
+
         layout = QGridLayout()
         layout.addWidget(filebrowse, 0, 0, 1, 1)
         layout.addWidget(self.filename_label, 0, 1, 1, 2)
+        layout.addWidget(folderselect, 1, 0, 1, 1)
+        layout.addWidget(self.foldersave_label, 1, 1, 1, 2)
         self.fileOpenGroupBox.setLayout(layout)
 
     def displayFilename(self):
 
         self.filename = QFileDialog.getOpenFileName(self, 'Select original file')
         self.filename_label.setText('Video selected: ' + self.filename[0])
+        self.foldersave = os.path.dirname(self.filename[0])
+        self.foldersave_label.setText('Saving to: ' + self.foldersave)
+
+    def displayFoldername(self):
+
+        self.foldersave = QFileDialog.getExistingDirectory(self, 'Select directory to save to')
+        self.foldersave_label.setText('Saving to: ' + self.foldersave)
 
     def createVideoInfoGroupBox(self):
         self.videoInfoGroupBox = QGroupBox("Video Info")
@@ -714,6 +730,7 @@ class FormWidget(QWidget):
         if hasattr(self, 'filename') and hasattr(self, 'frames'):
             self.thread_si = QThread()
             self.worker_si = strobeImageWorker(self.image, self.createImagebutton, self.image_label, self.filename[0],
+                                               os.path.join(self.foldersave, os.path.split(self.filename[0])[1]),
                                                self.frames, self.searcharea, self.samp_og_vid.value(),
                                                self.slider.value(), self.frame_comp.value(),
                                                self.auto_thresh.value(), self.auto_num.value()+2)
@@ -738,6 +755,7 @@ class FormWidget(QWidget):
         if hasattr(self, 'filename') and hasattr(self, 'frames'):
             self.thread_sv = QThread()
             self.worker_sv = strobeVideoWorker(self.image, self.image_label, self.filename[0],
+                                               os.path.join(self.foldersave, os.path.split(self.filename[0])[1]),
                                                self.frames, self.searcharea, self.samp_og_vid.value(),
                                                self.slider.value(), self.frame_comp.value())
             self.worker_sv.moveToThread(self.thread_sv)
