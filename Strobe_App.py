@@ -10,163 +10,163 @@ import os
 from Strobe.strobe import strobe, strobe_image, strobe_findframes, strobe_autofindframes
 
 
-class helpPopup(QWidget):
-    def __init__(self, parent=None):
-        super(helpPopup, self).__init__(parent)
-
-        self.createHelpFileOpen()
-        self.createHelpVideoInfo()
-        self.createHelpSearchArea()
-        self.createHelpAutoSelect()
-        self.createHelpStrobeFrames()
-        self.createHelpFrameCompare()
-        self.createHelpPixelChangeOptions()
-        self.createHelpCreateStrobe()
-
-        popupLayout = QGridLayout()
-        popupLayout.addWidget(self.helpFileOpenBox, 0, 0, 1, 3)
-        popupLayout.addWidget(self.helpVideoInfoBox, 1, 0, 1, 3)
-        popupLayout.addWidget(self.helpSearchArea, 2, 0, 1, 3)
-        popupLayout.addWidget(self.helpAutoSelectBox, 3, 0, 1, 3)
-        popupLayout.addWidget(self.helpStrobeFramesBox, 4, 0, 1, 3)
-        popupLayout.addWidget(self.helpFrameCompareBox, 5, 0, 1, 3)
-        popupLayout.addWidget(self.helpPixelChangeOptionsBox, 6, 0, 1, 3)
-        popupLayout.addWidget(self.helpCreateStrobeBox, 7, 0, 1, 3)
-        popupLayout.setRowStretch(1, 1)
-        popupLayout.setRowStretch(2, 1)
-        popupLayout.setColumnStretch(0, 1)
-        popupLayout.setColumnStretch(1, 1)
-        self.setLayout(popupLayout)
-        self.setWindowTitle('Help')
-
-        self.setGeometry(QRect(100, 100, 400, 200))
-
-    def createHelpFileOpen(self):
-        self.helpFileOpenBox = QGroupBox("File Open Help")
-
-        help_label = QLabel("Select video file:\n"
-                            "\tClick on the button to identify the video you want to use to create the strobe image/video.")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpFileOpenBox.setLayout(layout)
-
-    def createHelpVideoInfo(self):
-        self.helpVideoInfoBox = QGroupBox("Video Info Help")
-
-        help_label = QLabel("Sampling rate of original video:\n"
-                            "\tWhat is the sampling rate (frames per second) of the original video?")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpVideoInfoBox.setLayout(layout)
-
-    def createHelpSearchArea(self):
-        self.helpSearchArea = QGroupBox("Search Area Help")
-
-        help_label = QLabel("This provides the option to select a specific area in the video frame to 'capture' the object(s) of interest.\n"
-                            "The method do create the strobe image/video uses image subtraction (compares one image to another one and keeps the difference)."
-                            "So this option is especially helpful when their is additional movement from frame to frame that you do not want captured in the strobe image/video.\n\n"
-                            "You can select only one of the following options:\n\n"
-                            "No search area:\n"
-                            "\tDo not identify any specific area. Will keep all movements in the entire video frame.\n"
-                            "\tThis option is best used when the object(s) of interest is the only thing(s) moving from frame to frame.\n\n"
-                            "One general search area:\n"
-                            "\tYou identify one specific area that will be used for all strobe frames.\n"
-                            "\tThis option is best used when the object(s) of interest is the only thing(s) moving in that specified area.\n\n"
-                            "Search area for each strobe frame\n"
-                            "\tYou identify a specific area for EACH strobe frame.\n"
-                            "\tThis option is best used when there is a lot of extra movement in the video frame that you do not want 'captured.'\n"
-                            "\tThis option will create the 'cleanest' strobe image/video but also increases the manual effort time required.")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpSearchArea.setLayout(layout)
-
-    def createHelpAutoSelect(self):
-        self.helpAutoSelectBox = QGroupBox("Auto Select Frames Help")
-
-        help_label = QLabel("Useful to find consistent number of strobe frames with consistent spacing between two events (example, flight phase in the long jump).\n"
-                            "If this is what you want, you just need to identify the first strobe frame (ex long jump take-off) and the last strobe frame (ex long jump landing) and the code will auto select a consistent number of frames in between.\n\n"
-                            "Auto Frame Selection Threshold:\n"
-                            "\tHow many frames need to be between two manually identified strobe frames for the code to auto select strobe frame(s)?\n"
-                            "\t\tEx) You specify 5: strobe frames will be automatically identified whenever there are 5 or more frames between strobe frames you manually identified.\n\n"
-                            "Auto Frame Selection Number:\n"
-                            "\tHow many strobe frames do you want to automatically identify if the Auto Frame Selection Threshold is met?\n"
-                            "\t\tEx) You specify 2: 2 strobe frames will be added between each pair of strobe frames you manually identified (as long as the Auto Frame Selection Threshold is met)")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpAutoSelectBox.setLayout(layout)
-
-    def createHelpStrobeFrames(self):
-        self.helpStrobeFramesBox = QGroupBox("Strobe Frames Help")
-
-        help_label = QLabel("Click this button to manual identify the frames you want to be 'strobed'.\n"
-                            "Other frames may be added depending on the Auto Frame Selection settings.\n"
-                            "All manually and any automatically identified strobe frames will be displayed next to the button.\n\n"
-                            "To select the frames, a new window will popup and you will manually search through the video to identify which frame(s) you want to keep.\n"
-                            "Below are the hot keys to operate the strobe frame selections:\n"
-                            "\t- user can advance using the trackbar but must click button after to update\n"
-                            "\t- 'k' = -100 frames\n"
-                            "\t- 'm' = -10 frames\n"
-                            "\t- ',' = -1 frame\n"
-                            "\t- '.' = +1 frame\n"
-                            "\t- '/' = +10 frames\n"
-                            "\t- ';' = +100 frames\n"
-                            "\t- click 'q' to select frame when identified in GUI\n"
-                            "\t- click 'esc' to exit out of GUI")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpStrobeFramesBox.setLayout(layout)
-
-    def createHelpFrameCompare(self):
-        self.helpFrameCompareBox = QGroupBox("Frame Comparison Help")
-
-        help_label = QLabel("Sets the difference in number of frames that are used for the image subtraction technique.\n"
-                            "\tEx) If the current frame number is 20, and the 'Change in frame # comparison' number is set at 5, it will compare the current frame (20) to the 5th frame later (25).\n"
-                            "The faster the movement, the lower this number can be. If the object(s) of interest is not moving quickly, increase this number.\n"
-                            "\tThe importance is that in order to create a 'clean' strobe image/video, there must be enough change in the image to pick up the movement.")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpFrameCompareBox.setLayout(layout)
-
-    def createHelpPixelChangeOptions(self):
-        self.helpPixelChangeOptionsBox = QGroupBox("Pixel Change Options Help")
-
-        help_label = QLabel("Sets the threshold that must be met in order to 'capture' the movement.\n"
-                            "\tSince this app uses image subtraction, this setting will define how much change in pixel color index must occur in order for the pixel to be 'captured'.\n"
-                            "The lower this number, the less 'noise' there may be but you may possibly lose some of the object(s) of interest.\n"
-                            "The higher this number, the more 'noise' there may be but you will likely capture all of your object(s) of interest.\n"
-                            "With good image contrast in your original video and appropriate settings (search area and frame comparison number) you should be not have to lower this number too much.")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpPixelChangeOptionsBox.setLayout(layout)
-
-    def createHelpCreateStrobe(self):
-        self.helpCreateStrobeBox = QGroupBox("Create Strobe Help")
-
-        help_label = QLabel("Create Strobe Image:\n"
-                            "\tClicking this button will create the strobe image. You can adjust the settings and re-create the image by clicking the button again.\n"
-                            "\tIt is saved in the same folder as the original video and its name is the same just with '_strobe.jpg' at the end.\n\n"
-                            "Create Strobe Video:\n"
-                            "\tClicking this button will create the strobe video. You can adjust the settings and re-create the video by clicking the button again.\n"
-                            "\tIt is saved in the same folder as the original video and its name is the same just with '_strobe.mp4' at the end.")
-
-        layout = QGridLayout()
-        layout.addWidget(help_label, 0, 0, 1, 1)
-        layout.setRowStretch(5, 1)
-        self.helpCreateStrobeBox.setLayout(layout)
+# class helpPopup(QWidget):
+#     def __init__(self, parent=None):
+#         super(helpPopup, self).__init__(parent)
+#
+#         self.createHelpFileOpen()
+#         self.createHelpVideoInfo()
+#         self.createHelpSearchArea()
+#         self.createHelpAutoSelect()
+#         self.createHelpStrobeFrames()
+#         self.createHelpFrameCompare()
+#         self.createHelpPixelChangeOptions()
+#         self.createHelpCreateStrobe()
+#
+#         popupLayout = QGridLayout()
+#         popupLayout.addWidget(self.helpFileOpenBox, 0, 0, 1, 3)
+#         popupLayout.addWidget(self.helpVideoInfoBox, 1, 0, 1, 3)
+#         popupLayout.addWidget(self.helpSearchArea, 2, 0, 1, 3)
+#         popupLayout.addWidget(self.helpAutoSelectBox, 3, 0, 1, 3)
+#         popupLayout.addWidget(self.helpStrobeFramesBox, 4, 0, 1, 3)
+#         popupLayout.addWidget(self.helpFrameCompareBox, 5, 0, 1, 3)
+#         popupLayout.addWidget(self.helpPixelChangeOptionsBox, 6, 0, 1, 3)
+#         popupLayout.addWidget(self.helpCreateStrobeBox, 7, 0, 1, 3)
+#         popupLayout.setRowStretch(1, 1)
+#         popupLayout.setRowStretch(2, 1)
+#         popupLayout.setColumnStretch(0, 1)
+#         popupLayout.setColumnStretch(1, 1)
+#         self.setLayout(popupLayout)
+#         self.setWindowTitle('Help')
+#
+#         self.setGeometry(QRect(100, 100, 400, 200))
+#
+#     def createHelpFileOpen(self):
+#         self.helpFileOpenBox = QGroupBox("File Open Help")
+#
+#         help_label = QLabel("Select video file:\n"
+#                             "\tClick on the button to identify the video you want to use to create the strobe image/video.")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpFileOpenBox.setLayout(layout)
+#
+#     def createHelpVideoInfo(self):
+#         self.helpVideoInfoBox = QGroupBox("Video Info Help")
+#
+#         help_label = QLabel("Sampling rate of original video:\n"
+#                             "\tWhat is the sampling rate (frames per second) of the original video?")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpVideoInfoBox.setLayout(layout)
+#
+#     def createHelpSearchArea(self):
+#         self.helpSearchArea = QGroupBox("Search Area Help")
+#
+#         help_label = QLabel("This provides the option to select a specific area in the video frame to 'capture' the object(s) of interest.\n"
+#                             "The method do create the strobe image/video uses image subtraction (compares one image to another one and keeps the difference).\n"
+#                             "So this option is especially helpful when their is additional movement from frame to frame that you do not want captured in the strobe image/video.\n\n"
+#                             "You can select only one of the following options:\n\n"
+#                             "No search area:\n"
+#                             "\tDo not identify any specific area. Will keep all movements in the entire video frame.\n"
+#                             "\tThis option is best used when the object(s) of interest is the only thing(s) moving from frame to frame.\n\n"
+#                             "One general search area:\n"
+#                             "\tYou identify one specific area that will be used for all strobe frames.\n"
+#                             "\tThis option is best used when the object(s) of interest is the only thing(s) moving in that specified area.\n\n"
+#                             "Search area for each strobe frame\n"
+#                             "\tYou identify a specific area for EACH strobe frame.\n"
+#                             "\tThis option is best used when there is a lot of extra movement in the video frame that you do not want 'captured.'\n"
+#                             "\tThis option will create the 'cleanest' strobe image/video but also increases the manual effort time required.")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpSearchArea.setLayout(layout)
+#
+#     def createHelpAutoSelect(self):
+#         self.helpAutoSelectBox = QGroupBox("Auto Select Frames Help")
+#
+#         help_label = QLabel("Useful to find consistent number of strobe frames with consistent spacing between two events (example, flight phase in the long jump).\n"
+#                             "If this is what you want, you just need to identify the first strobe frame (ex long jump take-off) and the last strobe frame (ex long jump landing) and the code will auto select a consistent number of frames in between.\n\n"
+#                             "Auto Frame Selection Threshold:\n"
+#                             "\tHow many frames need to be between two manually identified strobe frames for the code to auto select strobe frame(s)?\n"
+#                             "\t\tEx) You specify 5: strobe frames will be automatically identified whenever there are 5 or more frames between strobe frames you manually identified.\n\n"
+#                             "Auto Frame Selection Number:\n"
+#                             "\tHow many strobe frames do you want to automatically identify if the Auto Frame Selection Threshold is met?\n"
+#                             "\t\tEx) You specify 2: 2 strobe frames will be added between each pair of strobe frames you manually identified (as long as the Auto Frame Selection Threshold is met)")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpAutoSelectBox.setLayout(layout)
+#
+#     def createHelpStrobeFrames(self):
+#         self.helpStrobeFramesBox = QGroupBox("Strobe Frames Help")
+#
+#         help_label = QLabel("Click this button to manual identify the frames you want to be 'strobed'.\n"
+#                             "Other frames may be added depending on the Auto Frame Selection settings.\n"
+#                             "All manually and any automatically identified strobe frames will be displayed next to the button.\n\n"
+#                             "To select the frames, a new window will popup and you will manually search through the video to identify which frame(s) you want to keep.\n"
+#                             "Below are the hot keys to operate the strobe frame selections:\n"
+#                             "\t- user can advance using the trackbar but must click button after to update\n"
+#                             "\t- 'k' = -100 frames\n"
+#                             "\t- 'm' = -10 frames\n"
+#                             "\t- ',' = -1 frame\n"
+#                             "\t- '.' = +1 frame\n"
+#                             "\t- '/' = +10 frames\n"
+#                             "\t- ';' = +100 frames\n"
+#                             "\t- click 'q' to select frame when identified in GUI\n"
+#                             "\t- click 'esc' to exit out of GUI")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpStrobeFramesBox.setLayout(layout)
+#
+#     def createHelpFrameCompare(self):
+#         self.helpFrameCompareBox = QGroupBox("Frame Comparison Help")
+#
+#         help_label = QLabel("Sets the difference in number of frames that are used for the image subtraction technique.\n"
+#                             "\tEx) If the current frame number is 20, and the 'Change in frame # comparison' number is set at 5, it will compare the current frame (20) to the 5th frame later (25).\n"
+#                             "The faster the movement, the lower this number can be. If the object(s) of interest is not moving quickly, increase this number.\n"
+#                             "\tThe importance is that in order to create a 'clean' strobe image/video, there must be enough change in the image to pick up the movement.")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpFrameCompareBox.setLayout(layout)
+#
+#     def createHelpPixelChangeOptions(self):
+#         self.helpPixelChangeOptionsBox = QGroupBox("Pixel Change Options Help")
+#
+#         help_label = QLabel("Sets the threshold that must be met in order to 'capture' the movement.\n"
+#                             "\tSince this app uses image subtraction, this setting will define how much change in pixel color index must occur in order for the pixel to be 'captured'.\n"
+#                             "The lower this number, the less 'noise' there may be but you may possibly lose some of the object(s) of interest.\n"
+#                             "The higher this number, the more 'noise' there may be but you will likely capture all of your object(s) of interest.\n"
+#                             "With good image contrast in your original video and appropriate settings (search area and frame comparison number) you should be not have to lower this number too much.")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpPixelChangeOptionsBox.setLayout(layout)
+#
+#     def createHelpCreateStrobe(self):
+#         self.helpCreateStrobeBox = QGroupBox("Create Strobe Help")
+#
+#         help_label = QLabel("Create Strobe Image:\n"
+#                             "\tClicking this button will create the strobe image. You can adjust the settings and re-create the image by clicking the button again.\n"
+#                             "\tIt is saved in the same folder as the original video and its name is the same just with '_strobe.jpg' at the end.\n\n"
+#                             "Create Strobe Video:\n"
+#                             "\tClicking this button will create the strobe video. You can adjust the settings and re-create the video by clicking the button again.\n"
+#                             "\tIt is saved in the same folder as the original video and its name is the same just with '_strobe.mp4' at the end.")
+#
+#         layout = QGridLayout()
+#         layout.addWidget(help_label, 0, 0, 1, 1)
+#         layout.setRowStretch(5, 1)
+#         self.helpCreateStrobeBox.setLayout(layout)
 
 
 class helpPopup2(QWidget):
@@ -197,7 +197,7 @@ class helpPopup2(QWidget):
         elif self.groupsettings == "searcharea":
             box_title = "Search Area Help"
             box_text = ("This provides the option to select a specific area in the video frame to 'capture' the object(s) of interest.\n"
-                        "The method do create the strobe image/video uses image subtraction (compares one image to another one and keeps the difference)."
+                        "The method do create the strobe image/video uses image subtraction (compares one image to another one and keeps the difference).\n"
                         "So this option is especially helpful when their is additional movement from frame to frame that you do not want captured in the strobe image/video.\n\n"
                         "You can select only one of the following options:\n\n"
                         "No search area:\n"
@@ -374,7 +374,7 @@ class strobeImageWorker(QObject):
 
         self.createImagebutton.setText("Recreate strobe image")
 
-        self.image_label.setText("Here is your strobe image! It is saved where the original video is located.\n"
+        self.image_label.setText("Here is your strobe image!\n"
                                  "Either create the strobe video or modify the settings and recreate the strobe image")
 
         self.finished.emit()
@@ -402,7 +402,7 @@ class strobeVideoWorker(QObject):
         pixmap = QPixmap(self.fname_new[:-4] + "_strobe.jpg").scaledToWidth(820)
         self.image.setPixmap(pixmap)
 
-        self.image_label.setText("Your strobe video and image have been created! They are saved where the original video is located.")
+        self.image_label.setText("Your strobe video and image have been created!")
 
         self.finished.emit()
 
@@ -514,14 +514,18 @@ class FormWidget(QWidget):
         mainLayout.addWidget(self.pixelThreshGroupBox, 3, 1, 1, 2)
         mainLayout.addWidget(self.createStrobeGroupBox, 4, 0, 1, 3)
         mainLayout.addWidget(self.imageBox, 0, 3, 5, 3)
-        mainLayout.setRowStretch(1, 1)
-        mainLayout.setRowStretch(2, 1)
-        mainLayout.setColumnStretch(0, 1)
-        mainLayout.setColumnStretch(1, 1)
+        #mainLayout.setRowStretch(1, 1)
+        #mainLayout.setRowStretch(2, 1)
+        #mainLayout.setColumnStretch(0, 1)
+        #mainLayout.setColumnStretch(1, 1)
         self.setLayout(mainLayout)
 
     def createFileOpenGroupBox(self):
         self.fileOpenGroupBox = QGroupBox("File Open")
+
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("fileopen"))
 
         filebrowse = QPushButton("Select video file", self)
         filebrowse.clicked.connect(self.displayFilename)
@@ -532,10 +536,11 @@ class FormWidget(QWidget):
         self.foldersave_label = QLabel("", self)
 
         layout = QGridLayout()
-        layout.addWidget(filebrowse, 0, 0, 1, 1)
-        layout.addWidget(self.filename_label, 0, 1, 1, 2)
-        layout.addWidget(folderselect, 1, 0, 1, 1)
-        layout.addWidget(self.foldersave_label, 1, 1, 1, 2)
+        layout.addWidget(helpbutton, 0, 0, 1, 1)
+        layout.addWidget(filebrowse, 0, 1, 1, 5)
+        layout.addWidget(self.filename_label, 0, 6, 1, 20)
+        layout.addWidget(folderselect, 1, 1, 1, 5)
+        layout.addWidget(self.foldersave_label, 1, 6, 1, 20)
         self.fileOpenGroupBox.setLayout(layout)
 
     def displayFilename(self):
@@ -560,6 +565,10 @@ class FormWidget(QWidget):
         self.samp_og_vid.setMaximum(5000)
         self.samp_og_vid.setValue(240)
 
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("videoinfo"))
+
         #samp_new_vid_label = QLabel("Sampling rate of new video:")
 
         #self.samp_new_vid = QSpinBox(self.videoInfoGroupBox)
@@ -568,8 +577,9 @@ class FormWidget(QWidget):
         #self.samp_new_vid.setValue(240)
 
         layout = QGridLayout()
-        layout.addWidget(samp_og_vid_label, 0, 0, 1, 1)
-        layout.addWidget(self.samp_og_vid, 0, 1, 1, 2)
+        layout.addWidget(samp_og_vid_label, 0, 0, 1, 5)
+        layout.addWidget(self.samp_og_vid, 0, 6, 1, 2)
+        layout.addWidget(helpbutton, 1, 0, 1, 1)
         #layout.addWidget(samp_new_vid_label, 1, 0, 1, 1)
         #layout.addWidget(self.samp_new_vid, 1, 1, 1, 2)
         layout.setRowStretch(5, 1)
@@ -585,11 +595,17 @@ class FormWidget(QWidget):
         self.search_all = QRadioButton("Search area for each strobe frame")
         self.search_no.setChecked(True)
 
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("searcharea"))
+
         layout = QGridLayout()
-        layout.addWidget(crop_label, 1, 0, 2, 1)
-        layout.addWidget(self.search_no)
-        layout.addWidget(self.search_one)
-        layout.addWidget(self.search_all)
+        layout.addWidget(crop_label, 0, 0, 2, 11)
+        layout.addWidget(self.search_no, 2, 0, 1, 11)
+        layout.addWidget(self.search_one, 3, 0, 1, 11)
+        layout.addWidget(self.search_all, 4, 0, 1, 11)
+        layout.addWidget(helpbutton, 5, 0, 1, 1)
+        layout.setRowStretch(7, 1)
         self.searchAreaOptionsGroupBox.setLayout(layout)
 
     def createAutoSelectOptionsGroupBox(self):
@@ -609,24 +625,34 @@ class FormWidget(QWidget):
         self.auto_num.setMaximum(200)
         self.auto_num.setValue(0)
 
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("autoselect"))
+
         layout = QGridLayout()
-        layout.addWidget(auto_thresh_label, 0, 0, 1, 1)
-        layout.addWidget(self.auto_thresh, 0, 1, 1, 2)
-        layout.addWidget(auto_num_thresh, 1, 0, 1, 1)
-        layout.addWidget(self.auto_num, 1, 1, 1, 2)
+        layout.addWidget(auto_thresh_label, 0, 0, 1, 5)
+        layout.addWidget(self.auto_thresh, 0, 6, 1, 2)
+        layout.addWidget(auto_num_thresh, 1, 0, 1, 5)
+        layout.addWidget(self.auto_num, 1, 6, 1, 2)
+        layout.addWidget(helpbutton, 2, 0, 1, 1)
         layout.setRowStretch(5, 1)
         self.autoSelectOptionsGroupBox.setLayout(layout)
 
     def createStrobeFramesGroupBox(self):
         self.strobeFramesGroupBox = QGroupBox("Strobe Frames")
 
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("strobeframes"))
+
         self.strobebutton = QPushButton("Select strobe frames", self)
         self.strobebutton.clicked.connect(self.selectStrobeFrames)
         self.strobe_label = QLabel("No strobe frames selected", self)
 
         layout = QGridLayout()
-        layout.addWidget(self.strobebutton, 0, 0, 1, 1)
-        layout.addWidget(self.strobe_label, 0, 1, 1, 2)
+        layout.addWidget(helpbutton, 0, 0, 1, 1)
+        layout.addWidget(self.strobebutton, 0, 1, 1, 5)
+        layout.addWidget(self.strobe_label, 0, 11, 1, 20)
         self.strobeFramesGroupBox.setLayout(layout)
 
     def selectStrobeFrames(self):
@@ -670,15 +696,24 @@ class FormWidget(QWidget):
         self.frame_comp.setMaximum(100)
         self.frame_comp.setValue(5)
 
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("framecompare"))
+
         layout = QGridLayout()
-        layout.addWidget(frame_comp_label, 0, 0, 1, 1)
-        layout.addWidget(self.frame_comp, 0, 1, 1, 2)
+        layout.addWidget(frame_comp_label, 0, 0, 1, 5)
+        layout.addWidget(self.frame_comp, 0, 6, 1, 2)
+        layout.addWidget(helpbutton, 1, 0, 1, 1)
         layout.setRowStretch(5, 1)
         self.frameCompareGroupBox.setLayout(layout)
 
 
     def createPixelThreshGroupBox(self):
         self.pixelThreshGroupBox = QGroupBox("Pixel Change Options")
+
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("pixelchange"))
 
         auto_thresh_label = QLabel(
             "Set the threshold for how much the pixel color value needs to change to keep in image\n"
@@ -699,9 +734,10 @@ class FormWidget(QWidget):
         self.slider_label.setText("Value : " + str(self.slider.value()))
 
         layout = QGridLayout()
-        layout.addWidget(auto_thresh_label, 0, 0, 1, 1)
-        layout.addWidget(self.slider_label, 1, 0, 1, 2)
-        layout.addWidget(self.slider, 2, 0, 1, 2)
+        layout.addWidget(auto_thresh_label, 0, 0, 1, 15)
+        layout.addWidget(helpbutton, 1, 0, 1, 1)
+        layout.addWidget(self.slider_label, 1, 1, 1, 15)
+        layout.addWidget(self.slider, 2, 0, 1, 15)
         layout.setRowStretch(5, 1)
         self.pixelThreshGroupBox.setLayout(layout)
 
@@ -712,6 +748,10 @@ class FormWidget(QWidget):
     def createCreateStrobeGroupBox(self):
         self.createStrobeGroupBox = QGroupBox("Create strobe")
 
+        helpbutton = QPushButton(self)
+        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.clicked.connect(lambda: self.help_window("createstrobe"))
+
         self.createImagebutton = QPushButton("Create strobe image", self)
         self.createImagebutton.clicked.connect(lambda: self.showProgressWindow("Please wait, your strobe image is being created..."))
         self.createImagebutton.clicked.connect(self.createStrobeImage)
@@ -721,8 +761,9 @@ class FormWidget(QWidget):
         saveVideobutton.clicked.connect(self.saveStrobeVideo)
 
         layout = QGridLayout()
-        layout.addWidget(self.createImagebutton, 0, 0, 1, 1)
-        layout.addWidget(saveVideobutton, 0, 1, 1, 1)
+        layout.addWidget(helpbutton, 0, 0, 1, 1)
+        layout.addWidget(self.createImagebutton, 0, 1, 1, 12)
+        layout.addWidget(saveVideobutton, 0, 13, 1, 12)
         self.createStrobeGroupBox.setLayout(layout)
 
     def createStrobeImage(self):
@@ -775,8 +816,8 @@ class FormWidget(QWidget):
 
         self.image_label = QLabel(self)
         self.image_label.setText(
-            "Please see the Help menu for more instructions.\n\n"
-            "Please select your video, strobe frames, and verify the settings, then create strobe image.")
+            "Please select your video, strobe frames, and verify the settings, then create strobe image.\n\n"
+            "Please see the Help menu for more instructions.")
 
         self.image = QLabel(self)
 
@@ -803,11 +844,15 @@ class FormWidget(QWidget):
         self.errorwindow = errorPopup(label)
         self.errorwindow.show()
 
+    def help_window(self, label):
+        self.helpwindow = helpPopup2(groupsettings=label)
+        self.helpwindow.show()
+
 
 print("Loading...this may take a few minutes...")
 app = QApplication([])
-app.setStyleSheet("QGroupBox{font-size: 12pt;} QLabel{font-size: 10pt;} QPushButton{font-size: 10pt;}"
-                  "QSpinBox{font-size: 10pt;} QRadioButton{font-size: 10pt;}")
+app.setStyleSheet("QGroupBox{font-size: 11pt;} QLabel{font-size: 9pt;} QPushButton{font-size: 9pt;}"
+                  "QSpinBox{font-size: 9pt;} QRadioButton{font-size: 9pt;}")
 foo = MyMainWindow()
 foo.show()
 sys.exit(app.exec_())
