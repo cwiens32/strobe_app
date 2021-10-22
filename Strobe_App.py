@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
         QVBoxLayout, QWidget)
 import sys
 import os
+from datetime import date
+import images_qr
 from Strobe.strobe import strobe, strobe_image, strobe_findframes, strobe_autofindframes
 
 
@@ -265,6 +267,10 @@ class helpPopup2(QWidget):
 
         layout = QGridLayout()
         layout.addWidget(help_label, 0, 0, 1, 1)
+        if self.groupsettings == "autoselect":
+            picdisp = QLabel()
+            picdisp.setPixmap(QPixmap(":/img/autothresh_example.png"))
+            layout.addWidget(picdisp, 1, 0, 1, 1)
         layout.setRowStretch(5, 1)
         self.helpFileOpenBox.setLayout(layout)
 
@@ -284,10 +290,13 @@ class aboutPopup(QWidget):
     def createAbout(self):
         self.helpAboutBox = QGroupBox()
 
-        help_label = QLabel("This app was created to allow anyone to create strobe images and videos.\n"
-                            "This app works best when the camera isn't moving (similar background from frame to frame).\n\n"
-                            "If you experience any issues or have any suggestions for improvements, please email me (Casey) at cwiens32@gmail.com or through Twitter at @casey_wiens. I would love to see what you create!\n\n"
-                            "Last updated: \n\n")
+        help_label = QLabel("This app was created to allow anyone to create strobe images and videos.<br>"
+                            "This app works best when the camera isn't moving (similar background from frame to frame).<br><br>"
+                            "If you experience any issues or have any suggestions for improvements, please create an issue on <a href=\'https://github.com/cwiens32/strobe_app/issues\'>GitHub</a> or email me (Casey) at cwiens32@gmail.com.<br><br>"
+                            "I would love to see what you create! So please feel free to share via email or Twitter (<a href=\'https://twitter.com/casey_wiens\'>@casey_wiens</a>).<br><br>"
+                            "Version: 1.0<br>"
+                            "Last updated: " + str(date.today()))
+        help_label.setOpenExternalLinks(True)
 
         layout = QGridLayout()
         layout.addWidget(help_label, 0, 0, 1, 1)
@@ -524,7 +533,7 @@ class FormWidget(QWidget):
         self.fileOpenGroupBox = QGroupBox("File Open")
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("fileopen"))
 
         filebrowse = QPushButton("Select video file", self)
@@ -566,7 +575,7 @@ class FormWidget(QWidget):
         self.samp_og_vid.setValue(240)
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("videoinfo"))
 
         #samp_new_vid_label = QLabel("Sampling rate of new video:")
@@ -596,7 +605,7 @@ class FormWidget(QWidget):
         self.search_no.setChecked(True)
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("searcharea"))
 
         layout = QGridLayout()
@@ -626,7 +635,7 @@ class FormWidget(QWidget):
         self.auto_num.setValue(0)
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("autoselect"))
 
         layout = QGridLayout()
@@ -642,7 +651,7 @@ class FormWidget(QWidget):
         self.strobeFramesGroupBox = QGroupBox("Strobe Frames")
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("strobeframes"))
 
         self.strobebutton = QPushButton("Select strobe frames", self)
@@ -697,7 +706,7 @@ class FormWidget(QWidget):
         self.frame_comp.setValue(5)
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("framecompare"))
 
         layout = QGridLayout()
@@ -712,7 +721,7 @@ class FormWidget(QWidget):
         self.pixelThreshGroupBox = QGroupBox("Pixel Change Options")
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("pixelchange"))
 
         auto_thresh_label = QLabel(
@@ -749,7 +758,7 @@ class FormWidget(QWidget):
         self.createStrobeGroupBox = QGroupBox("Create strobe")
 
         helpbutton = QPushButton(self)
-        helpbutton.setIcon(QIcon("info_pic.png"))
+        helpbutton.setIcon(QIcon(":/img/info_pic.png"))
         helpbutton.clicked.connect(lambda: self.help_window("createstrobe"))
 
         self.createImagebutton = QPushButton("Create strobe image", self)
@@ -816,7 +825,18 @@ class FormWidget(QWidget):
 
         self.image_label = QLabel(self)
         self.image_label.setText(
-            "Please select your video, strobe frames, and verify the settings, then create strobe image.\n\n"
+            "Steps:<br><br>"
+            "1.) Click [Select video file] button to identify the video you want to use<br><br>"
+            "2.) <i>Optional</i> Click [Select a directory to save to] to change the location of the saved image/video<br><br>"
+            "3.) Set the sampling rate of the video<br><br>"
+            "4.) Choose which option you want for identifying a 'search area' (see Help for more info)<br><br>"
+            "5.) Set the values for <i>Auto Select Frames Options</i> (see Help for more info)<br><br>"
+            "6.) Click [Select strobe frames] button to identify the frames to use in creating the strobe effect (see Help for more info)<br><br>"
+            "7.) Set the value for <i>Change in frame # comparison</i> (see Help for more info)<br><br>"
+            "8.) Set the value for <i>Pixel Change Options</i> (see Help for more info)<br><br>"
+            "9a.) Click [Create strobe image] button to create your strobe image<br><br>"
+            "OR<br><br>"
+            "9b.) Click [Create strobe video] button to create your strobe video<br><br><br><br>"
             "Please see the Help menu for more instructions.")
 
         self.image = QLabel(self)
@@ -849,7 +869,6 @@ class FormWidget(QWidget):
         self.helpwindow.show()
 
 
-print("Loading...this may take a few minutes...")
 app = QApplication([])
 app.setStyleSheet("QGroupBox{font-size: 11pt;} QLabel{font-size: 9pt;} QPushButton{font-size: 9pt;}"
                   "QSpinBox{font-size: 9pt;} QRadioButton{font-size: 9pt;}")
