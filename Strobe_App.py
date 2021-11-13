@@ -9,7 +9,7 @@ import sys
 import os
 from datetime import date
 import images_qr
-from Strobe.strobe import strobe, strobe_image, strobe_findframes, strobe_autofindframes
+from Strobe.strobe import strobe, strobe_image, strobe_findframes, strobe_autofindframes, strobe_findarea
 
 
 # class helpPopup(QWidget):
@@ -229,7 +229,7 @@ class helpPopup2(QWidget):
                         "All manually and any automatically identified strobe frames will be displayed next to the button.\n\n"
                         "To select the frames, a new window will popup and you will manually search through the video to identify which frame(s) you want to keep.\n"
                         "Below are the hot keys to operate the strobe frame selections:\n"
-                        "\t- user can advance using the trackbar but must click button after to update\n"
+                        "\t- you can advance using the trackbar but must click button after to update\n"
                         "\t- 'k' = -100 frames\n"
                         "\t- 'm' = -10 frames\n"
                         "\t- ',' = -1 frame\n"
@@ -256,10 +256,10 @@ class helpPopup2(QWidget):
             box_text = ("These steps may take awhile! It depends on the length of your video, please be patient.\n\n"
                         "Create Strobe Image:\n"
                         "\tClicking this button will create the strobe image. You can adjust the settings and re-create the image by clicking the button again.\n"
-                        "\tIt is saved in the same folder as the original video and its name is the same just with '_strobe.jpg' at the end.\n\n"
+                        "\tIt is saved with the same name as the original video, just with '_strobe.jpg' at the end.\n\n"
                         "Create Strobe Video:\n"
                         "\tClicking this button will create the strobe video. You can adjust the settings and re-create the video by clicking the button again.\n"
-                        "\tIt is saved in the same folder as the original video and its name is the same just with '_strobe.mp4' at the end.")
+                        "\tIt is saved with the same name as the original video, just with '_strobe.mp4' at the end.")
 
         self.helpFileOpenBox = QGroupBox(box_title)
 
@@ -354,7 +354,7 @@ class strobeImageWorker(QObject):
     finished = pyqtSignal()
 
     def __init__(self, image, createImagebutton, image_label, fname_og, fname_new, frames, searcharea, samp, thresh,
-                 bgint, frame_thresh, frame_num):
+                 bgint, frame_thresh, frame_num, crop):
         super().__init__()
         self.image = image
         self.createImagebutton = createImagebutton
@@ -368,12 +368,13 @@ class strobeImageWorker(QObject):
         self.bgint = bgint
         self.frame_thresh = frame_thresh
         self.frame_num = frame_num
-
+        self.crop = crop
 
     def run(self):
         # run strobe auto frames just in case user changed settings after first id'ing strobe frames
-        bar = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
-        self.frames = bar
+        self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
+        # check to see if user needs to find (more) searchareas (in case user changed auto id settings)
+        self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
         # run strobe image function
         strobe_image(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                      samp=self.samp, thresh=self.thresh, bgint=self.bgint)
@@ -391,7 +392,8 @@ class strobeImageWorker(QObject):
 class strobeVideoWorker(QObject):
     finished = pyqtSignal()
 
-    def __init__(self, image, image_label, fname_og, fname_new, frames, searcharea, samp, thresh, bgint):
+    def __init__(self, image, image_label, fname_og, fname_new, frames, searcharea, samp, thresh, bgint,
+                 frame_thresh, frame_num, crop):
         super().__init__()
         self.image = image
         self.image_label = image_label
@@ -402,8 +404,15 @@ class strobeVideoWorker(QObject):
         self.samp = samp
         self.thresh = thresh
         self.bgint = bgint
+        self.frame_thresh = frame_thresh
+        self.frame_num = frame_num
+        self.crop = crop
 
     def run(self):
+        # run strobe auto frames just in case user changed settings after first id'ing strobe frames
+        self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
+        # check to see if user needs to find (more) searchareas (in case user changed auto id settings)
+        self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
         # run strobe image function
         strobe(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                samp=self.samp, thresh=self.thresh, bgint=self.bgint)
@@ -668,11 +677,11 @@ class FormWidget(QWidget):
 
         try:
             if self.search_no.isChecked():
-                crop = None
+                self.crop = None
             elif self.search_one.isChecked():
-                crop = "one"
+                self.crop = "one"
             elif self.search_all.isChecked():
-                crop = "all"
+                self.crop = "all"
 
             if self.auto_thresh.value() == 0:
                 autoid_thresh = None
@@ -680,7 +689,7 @@ class FormWidget(QWidget):
                 autoid_thresh = self.auto_thresh.value()
 
             self.hide()
-            self.frames, self.searcharea = strobe_findframes(self.filename[0], crop=crop,
+            self.frames, self.searcharea = strobe_findframes(self.filename[0], crop=self.crop,
                                                              autoid_thresh=autoid_thresh,
                                                              autoid_num=self.auto_num.value()+2)
             self.show()
@@ -783,7 +792,7 @@ class FormWidget(QWidget):
                                                os.path.join(self.foldersave, os.path.split(self.filename[0])[1]),
                                                self.frames, self.searcharea, self.samp_og_vid.value(),
                                                self.slider.value(), self.frame_comp.value(),
-                                               self.auto_thresh.value(), self.auto_num.value()+2)
+                                               self.auto_thresh.value(), self.auto_num.value()+2, self.crop)
             self.worker_si.moveToThread(self.thread_si)
             self.thread_si.started.connect(self.worker_si.run)
             self.worker_si.finished.connect(self.thread_si.quit)
@@ -807,7 +816,8 @@ class FormWidget(QWidget):
             self.worker_sv = strobeVideoWorker(self.image, self.image_label, self.filename[0],
                                                os.path.join(self.foldersave, os.path.split(self.filename[0])[1]),
                                                self.frames, self.searcharea, self.samp_og_vid.value(),
-                                               self.slider.value(), self.frame_comp.value())
+                                               self.slider.value(), self.frame_comp.value(),
+                                               self.auto_thresh.value(), self.auto_num.value()+2, self.crop)
             self.worker_sv.moveToThread(self.thread_sv)
             self.thread_sv.started.connect(self.worker_sv.run)
             self.worker_sv.finished.connect(self.thread_sv.quit)
