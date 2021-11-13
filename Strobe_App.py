@@ -354,7 +354,7 @@ class strobeImageWorker(QObject):
     finished = pyqtSignal()
 
     def __init__(self, image, createImagebutton, image_label, fname_og, fname_new, frames, searcharea, samp, thresh,
-                 bgint, frame_thresh, frame_num, crop):
+                 bgint, crop):
         super().__init__()
         self.image = image
         self.createImagebutton = createImagebutton
@@ -366,15 +366,13 @@ class strobeImageWorker(QObject):
         self.samp = samp
         self.thresh = thresh
         self.bgint = bgint
-        self.frame_thresh = frame_thresh
-        self.frame_num = frame_num
         self.crop = crop
 
     def run(self):
-        # run strobe auto frames just in case user changed settings after first id'ing strobe frames
-        self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
-        # check to see if user needs to find (more) searchareas (in case user changed auto id settings)
-        self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
+        ## run strobe auto frames just in case user changed settings after first id'ing strobe frames
+        #self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
+        ## check to see if user needs to find (more) searchareas (in case user changed auto id settings)
+        #self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
         # run strobe image function
         strobe_image(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                      samp=self.samp, thresh=self.thresh, bgint=self.bgint)
@@ -392,8 +390,7 @@ class strobeImageWorker(QObject):
 class strobeVideoWorker(QObject):
     finished = pyqtSignal()
 
-    def __init__(self, image, image_label, fname_og, fname_new, frames, searcharea, samp, thresh, bgint,
-                 frame_thresh, frame_num, crop):
+    def __init__(self, image, image_label, fname_og, fname_new, frames, searcharea, samp, thresh, bgint, crop):
         super().__init__()
         self.image = image
         self.image_label = image_label
@@ -404,15 +401,13 @@ class strobeVideoWorker(QObject):
         self.samp = samp
         self.thresh = thresh
         self.bgint = bgint
-        self.frame_thresh = frame_thresh
-        self.frame_num = frame_num
         self.crop = crop
 
     def run(self):
-        # run strobe auto frames just in case user changed settings after first id'ing strobe frames
-        self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
-        # check to see if user needs to find (more) searchareas (in case user changed auto id settings)
-        self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
+        ## run strobe auto frames just in case user changed settings after first id'ing strobe frames
+        #self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
+        ## check to see if user needs to find (more) searchareas (in case user changed auto id settings)
+        #self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
         # run strobe image function
         strobe(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                samp=self.samp, thresh=self.thresh, bgint=self.bgint)
@@ -665,12 +660,17 @@ class FormWidget(QWidget):
 
         self.strobebutton = QPushButton("Select strobe frames", self)
         self.strobebutton.clicked.connect(self.selectStrobeFrames)
-        self.strobe_label = QLabel("No strobe frames selected", self)
+        self.strobe_sel_label = QLabel("No strobe frames selected", self)
+        self.updatebutton = QPushButton("Update strobe frames", self)
+        self.updatebutton.clicked.connect(self.updateStrobeFrames)
+        self.strobe_all_label = QLabel("", self)
 
         layout = QGridLayout()
         layout.addWidget(helpbutton, 0, 0, 1, 1)
         layout.addWidget(self.strobebutton, 0, 1, 1, 5)
-        layout.addWidget(self.strobe_label, 0, 11, 1, 20)
+        layout.addWidget(self.strobe_sel_label, 0, 11, 1, 20)
+        layout.addWidget(self.updatebutton, 1, 1, 1, 5)
+        layout.addWidget(self.strobe_all_label, 1, 11, 1, 20)
         self.strobeFramesGroupBox.setLayout(layout)
 
     def selectStrobeFrames(self):
@@ -683,25 +683,55 @@ class FormWidget(QWidget):
             elif self.search_all.isChecked():
                 self.crop = "all"
 
-            if self.auto_thresh.value() == 0:
-                autoid_thresh = None
-            else:
-                autoid_thresh = self.auto_thresh.value()
-
             self.hide()
-            self.frames, self.searcharea = strobe_findframes(self.filename[0], crop=self.crop,
-                                                             autoid_thresh=autoid_thresh,
-                                                             autoid_num=self.auto_num.value()+2)
+            self.frames_sel, self.searcharea_sel = strobe_findframes(self.filename[0], crop=self.crop)
+            self.frames_all = strobe_autofindframes(self.frames_sel, autoid_thresh=self.auto_thresh.value(),
+                                                    autoid_num=self.auto_num.value()+2)
+            self.searcharea_all = strobe_findarea(self.filename[0], self.frames_all,
+                                                  areatype=self.crop, searcharea=self.searcharea_sel)
             self.show()
 
-            self.strobe_label.setText(
-                'Selected strobe frames: ' + ", ".join([str(element) for element in self.frames.to_list()]))
-            self.strobe_label.setWordWrap(True)
+            self.strobe_sel_label.setText(
+                'Selected strobe frames: ' + ", ".join([str(element) for element in self.frames_sel.to_list()]))
+            self.strobe_sel_label.setWordWrap(True)
+            self.strobe_all_label.setText(
+                'All strobe frames: ' + ", ".join([str(element) for element in self.frames_all.to_list()]))
+            self.strobe_all_label.setWordWrap(True)
             self.strobebutton.setText('Clear and reselect strobe frames')
         except AttributeError:
             self.show()
             self.error_window("<b>Cannot identify strobe frames!</b><br><br>"
                               "Please select video file first before trying to select the strobe frames.")
+
+    def updateStrobeFrames(self):
+
+        if self.search_no.isChecked():
+            self.crop = None
+        elif self.search_one.isChecked():
+            self.crop = "one"
+        elif self.search_all.isChecked():
+            self.crop = "all"
+
+        self.frames_all = strobe_autofindframes(self.frames_sel, autoid_thresh=self.auto_thresh.value(),
+                                                autoid_num=self.auto_num.value() + 2)
+        self.strobe_all_label.setText(
+            'All strobe frames: ' + ", ".join([str(element) for element in self.frames_all.to_list()]))
+        self.searcharea_all = strobe_findarea(self.filename[0], self.frames_all,
+                                              areatype=self.crop, searcharea=self.searcharea_sel)
+        print('sa all: ')
+        print(self.searcharea_all)
+        if self.searcharea_all is not None:
+            print('step 1')
+            for f in self.searcharea_all:
+                print('step 2')
+                print(f)
+                if f in set(self.frames_sel):
+                    print('step 3')
+                    print(self.searcharea_all[f])
+                    if self.searcharea_sel is None:
+                        self.searcharea_sel = {}
+                    self.searcharea_sel[f] = self.searcharea_all[f]
+        print(self.searcharea_sel)
 
 
     def createFrameCompareGroupBox(self):
@@ -786,13 +816,12 @@ class FormWidget(QWidget):
 
     def createStrobeImage(self):
 
-        if hasattr(self, 'filename') and hasattr(self, 'frames'):
+        if hasattr(self, 'filename') and hasattr(self, 'frames_all'):
             self.thread_si = QThread()
             self.worker_si = strobeImageWorker(self.image, self.createImagebutton, self.image_label, self.filename[0],
                                                os.path.join(self.foldersave, os.path.split(self.filename[0])[1]),
-                                               self.frames, self.searcharea, self.samp_og_vid.value(),
-                                               self.slider.value(), self.frame_comp.value(),
-                                               self.auto_thresh.value(), self.auto_num.value()+2, self.crop)
+                                               self.frames_all, self.searcharea_all, self.samp_og_vid.value(),
+                                               self.slider.value(), self.frame_comp.value(), self.crop)
             self.worker_si.moveToThread(self.thread_si)
             self.thread_si.started.connect(self.worker_si.run)
             self.worker_si.finished.connect(self.thread_si.quit)
@@ -811,13 +840,12 @@ class FormWidget(QWidget):
 
     def saveStrobeVideo(self):
 
-        if hasattr(self, 'filename') and hasattr(self, 'frames'):
+        if hasattr(self, 'filename') and hasattr(self, 'frames_all'):
             self.thread_sv = QThread()
             self.worker_sv = strobeVideoWorker(self.image, self.image_label, self.filename[0],
                                                os.path.join(self.foldersave, os.path.split(self.filename[0])[1]),
-                                               self.frames, self.searcharea, self.samp_og_vid.value(),
-                                               self.slider.value(), self.frame_comp.value(),
-                                               self.auto_thresh.value(), self.auto_num.value()+2, self.crop)
+                                               self.frames_all, self.searcharea_all, self.samp_og_vid.value(),
+                                               self.slider.value(), self.frame_comp.value(), self.crop)
             self.worker_sv.moveToThread(self.thread_sv)
             self.thread_sv.started.connect(self.worker_sv.run)
             self.worker_sv.finished.connect(self.thread_sv.quit)
