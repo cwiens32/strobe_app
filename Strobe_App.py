@@ -369,10 +369,6 @@ class strobeImageWorker(QObject):
         self.crop = crop
 
     def run(self):
-        ## run strobe auto frames just in case user changed settings after first id'ing strobe frames
-        #self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
-        ## check to see if user needs to find (more) searchareas (in case user changed auto id settings)
-        #self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
         # run strobe image function
         strobe_image(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                      samp=self.samp, thresh=self.thresh, bgint=self.bgint)
@@ -404,10 +400,6 @@ class strobeVideoWorker(QObject):
         self.crop = crop
 
     def run(self):
-        ## run strobe auto frames just in case user changed settings after first id'ing strobe frames
-        #self.frames = strobe_autofindframes(self.frames, autoid_thresh=self.frame_thresh, autoid_num=self.frame_num)
-        ## check to see if user needs to find (more) searchareas (in case user changed auto id settings)
-        #self.searcharea = strobe_findarea(self.fname_og, self.frames, areatype=self.crop, searcharea=self.searcharea)
         # run strobe image function
         strobe(self.fname_og, self.fname_new[:-4] + "_strobe", self.frames, searcharea=self.searcharea,
                samp=self.samp, thresh=self.thresh, bgint=self.bgint)
@@ -718,20 +710,14 @@ class FormWidget(QWidget):
             'All strobe frames: ' + ", ".join([str(element) for element in self.frames_all.to_list()]))
         self.searcharea_all = strobe_findarea(self.filename[0], self.frames_all,
                                               areatype=self.crop, searcharea=self.searcharea_sel)
-        print('sa all: ')
-        print(self.searcharea_all)
+
+        # store search areas for originally selected strobe frames
         if self.searcharea_all is not None:
-            print('step 1')
             for f in self.searcharea_all:
-                print('step 2')
-                print(f)
                 if f in set(self.frames_sel):
-                    print('step 3')
-                    print(self.searcharea_all[f])
                     if self.searcharea_sel is None:
                         self.searcharea_sel = {}
                     self.searcharea_sel[f] = self.searcharea_all[f]
-        print(self.searcharea_sel)
 
 
     def createFrameCompareGroupBox(self):
